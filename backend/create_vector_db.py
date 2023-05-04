@@ -2,6 +2,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 import pinecone
+from dotenv import load_dotenv
+
 
 import pandas as pd
 import tiktoken
@@ -12,6 +14,9 @@ import os
 import zipfile
 from urllib.request import urlopen
 from io import BytesIO
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 def embed_document(vector_db, splitter, document_id, document):
     metadata = [{'document_id': document_id}]
@@ -23,25 +28,25 @@ def embed_document(vector_db, splitter, document_id, document):
     docsearch = vector_db.add_texts(texts, metadatas=metadatas)
 
 def zipfile_from_github():
-    http_response = urlopen('https://github.com/twitter/the-algorithm/archive/refs/heads/main.zip')
+    http_response = urlopen('https://github.com/hango100/gpt4-pdf-chatbot-langchain/archive/refs/heads/main.zip')
     zf = BytesIO(http_response.read())
     return zipfile.ZipFile(zf, 'r')
 
 embeddings = OpenAIEmbeddings(
-    openai_api_key=os.environ['OPENAI_API_KEY'],
-    openai_organization=os.environ['OPENAI_ORG_ID'],
+    openai_api_key='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',
+    # openai_organization=os.environ['OPENAI_ORG_ID'],
 )
 encoder = tiktoken.get_encoding('cl100k_base')
 
 pinecone.init(
-    api_key=os.environ['PINECONE_API_KEY'],
-    environment='us-east1-gcp'
+    api_key='ad1f4867-3f72-4953-8d70-8f7c986268d1',
+    environment='us-west1-gcp'
 )
 vector_store = Pinecone(
-    index=pinecone.Index('pinecone-index'),
+    index=pinecone.Index('codebase'),
     embedding_function=embeddings.embed_query,
     text_key='text',
-    namespace='twitter-algorithm'
+    namespace='code'
 )
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -75,8 +80,8 @@ split_documents = splitter.create_documents(file_texts, metadatas=metadatas)
 vector_store.from_documents(
     documents=split_documents, 
     embedding=embeddings,
-    index_name='pinecone-index',
-    namespace='twitter-algorithm'
+    index_name='codebase',
+    namespace='code'
 )
 
 pd.DataFrame.from_records(corpus_summary).to_csv('data/corpus_summary.csv', index=False)

@@ -44,8 +44,8 @@ app.add_middleware(
 )
 
 pinecone.init(
-    api_key=os.environ['PINECONE_API_KEY'],
-    environment='us-east1-gcp'
+    api_key='ad1f4867-3f72-4953-8d70-8f7c986268d1',
+    environment='us-west1-gcp'
 )
 
 class Message(BaseModel):
@@ -95,14 +95,14 @@ def format_query(query, context):
 
 def embedding_search(query, k):
     embeddings = OpenAIEmbeddings(
-        openai_api_key=os.environ['OPENAI_API_KEY'],
-        openai_organization=os.environ['OPENAI_ORG_ID'],
+        openai_api_key='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',
+        # openai_organization=os.environ['OPENAI_ORG_ID'],
     )
     db = Pinecone(
-        index=pinecone.Index('pinecone-index'),
+        index=pinecone.Index('codebase'),
         embedding_function=embeddings.embed_query,
         text_key='text',
-        namespace='twitter-algorithm'
+        namespace='code'
     )
 
     return db.similarity_search(query, k=k)
@@ -132,7 +132,7 @@ def system_message(query: Message):
 
 @app.post("/chat_stream")
 async def chat_stream(chat: List[Message]):
-    model_name = 'gpt-3.5-turbo'
+    model_name = 'gpt-4'
     encoding_name = 'cl100k_base'
 
     def llm_thread(g, prompt):
@@ -143,8 +143,8 @@ async def chat_stream(chat: List[Message]):
                 streaming=True,
                 callback_manager=CallbackManager([ChainStreamHandler(g)]),
                 temperature=0.7,
-                openai_api_key=os.environ['OPENAI_API_KEY'],
-                openai_organization=os.environ['OPENAI_ORG_ID']
+                openai_api_key='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',
+                # openai_organization=os.environ['OPENAI_ORG_ID'],
             )
 
             encoding = tiktoken.get_encoding(encoding_name)
